@@ -48,7 +48,7 @@ module OpenTelemetry
               attributes: attributes,
               kind: OpenTelemetry::Trace::SpanKind::CLIENT
             ) do |span|
-              OpenTelemetry.propagation.inject(metadata)
+              OpenTelemetry.propagation.inject(metadata) unless instrumentation_config[:skip_telemetry_propagation]
               yield.tap do
                 span&.set_attribute(OpenTelemetry::SemanticConventions::Trace::RPC_GRPC_STATUS_CODE, 0)
               end

@@ -11,6 +11,7 @@ module OpenTelemetry
 
         option :allowed_metadata_headers, default: [], validate: :array
         option :peer_service, default: nil, validate: :string
+        option :skip_telemetry_propagation, default: false, validate: :boolean
 
         present do
           defined?(::GRPC)

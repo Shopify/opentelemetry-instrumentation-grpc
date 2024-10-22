@@ -18,9 +18,10 @@ RSpec.describe OpenTelemetry::Instrumentation::Grpc::Interceptors::Client do
   let(:span) { exporter.finished_spans.first }
   let(:response) { Proto::Example::ExampleResponse.new(response_name: "Done") }
   let(:block) { proc { response } }
+  let(:metadata) { {foo: "bar"} }
   let(:client_call) do
     OpenTelemetry::Instrumentation::Grpc::Interceptors::Client
-      .new.request_response(request: Proto::Example::ExampleRequest.new, call: proc { true }, method: "/proto.example.ExampleAPI/Example", metadata: {foo: "bar"}, &block)
+      .new.request_response(request: Proto::Example::ExampleRequest.new, call: proc { true }, method: "/proto.example.ExampleAPI/Example", metadata: metadata, &block)
   end
 
   describe "success request" do
@@ -41,6 +42,17 @@ RSpec.describe OpenTelemetry::Instrumentation::Grpc::Interceptors::Client do
 
         expect(exporter.finished_spans.size).to eq(1)
         expect(span.attributes["rpc.request.metadata.foo"]).to eq("bar")
+      end
+    end
+
+    describe "with skip_telemetry_propagation" do
+      let(:config) { {skip_telemetry_propagation: true} }
+
+      it do
+        client_call
+
+        expect(metadata[:foo]).to eq("bar")
+        expect(metadata["traceparent"]).to be_nil
       end
     end
   end
